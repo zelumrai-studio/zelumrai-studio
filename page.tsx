@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function Success(){return <main className="payment"><div className="card center"><div className="eyebrow">Payment</div><h1>Paiement confirmé</h1><p className="muted">Merci. Ton paiement a été reçu par Stripe.</p><Link className="btn" href="/dashboard">Retour au Dashboard</Link></div></main>}
