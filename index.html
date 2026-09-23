@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ht"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zélum'Rai Studio FULL V2</title>
+<style>
+:root{--bg:#070910;--p:#111624;--p2:#171d2c;--line:#2b3348;--txt:#f2f4ff;--muted:#9ba5c1;--a:#72f2c0;--b:#8da7ff}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(#070910,#0d1220);color:var(--txt);font:15px system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#080a10ed;backdrop-filter:blur(10px);padding:12px;border-bottom:1px solid var(--line)}
+.brand{font-size:21px;font-weight:900}.brand i{color:var(--a);font-style:normal}.sub,.small{font-size:11px;color:var(--muted)}
+main{max-width:1200px;margin:auto;padding:12px}.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:10px}.wide{grid-column:1/-1}
+.panel{background:var(--p);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+h2{font-size:14px;margin:0 0 9px}.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+button,input,select{font:inherit}button{border:1px solid var(--line);background:var(--p2);color:var(--txt);border-radius:10px;padding:9px 11px}button.on,button.primary{background:#174638;border-color:var(--a)}button:active{transform:scale(.98)}
+input,select{background:#0b0f18;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:8px}
+.steps{display:grid;grid-template-columns:repeat(16,1fr);gap:4px}.step{padding:0;aspect-ratio:1;min-width:0}.step.playhead{outline:2px solid var(--b)}
+.track{display:grid;grid-template-columns:90px 1fr;gap:6px;align-items:center;margin:6px 0}.trackname{font-size:11px;color:#dce2fa}
+.piano{overflow:auto}.prow{display:grid;grid-template-columns:40px 1fr;gap:5px;margin:2px 0}.cells{display:grid;grid-template-columns:repeat(32,15px);gap:2px}.cell{height:18px;padding:0;border-radius:3px}.cell.on{background:#355f55;border-color:var(--a)}
+.fxgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.fx{border:1px solid var(--line);border-radius:10px;padding:8px}.fx input{width:100%}
+.mixer{display:grid;grid-template-columns:repeat(7,105px);gap:7px;overflow:auto}.ch{background:#0c1019;border:1px solid var(--line);border-radius:10px;padding:7px}.meter{height:85px;background:#080b11;border-radius:7px;display:flex;align-items:end}.bar{width:100%;height:12%;background:linear-gradient(#ff7190,#72f2c0);transition:.08s}
+.fader{writing-mode:vertical-lr;direction:rtl;height:105px}.meterlabel{font-size:10px;color:var(--muted)}
+.status{color:var(--muted);font-size:12px}.rec{color:#ff8197}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.fxgrid{grid-template-columns:1fr 1fr}}
+</style></head><body>
+<header>
+<div class="brand">🎚️ Zélum'Rai Studio <i>FULL V2</i></div>
+<div class="sub">Real Web Audio Engine • Beat • Piano • Vocal • Mixer • FX • Export</div>
+<div class="row" style="margin-top:9px">
+<input id="project" value="Zélum'Rai Project">
+<button class="primary" onclick="save()">💾 Save</button><button onclick="load()">📂 Load</button>
+<button onclick="newProject()">🆕 New</button><button onclick="exportBeatWav()">⬇️ Beat WAV</button>
+<button onclick="recordMix()">⏺️ Record Mix</button><button onclick="stopMix()">⏹️ Stop Mix</button>
+</div>
+<div class="row" style="margin-top:7px"><button class="primary" onclick="start()">▶️ Play</button><button onclick="stop()">⏹️ Stop</button>
+<label class="small">BPM <input id="bpm" type="number" value="100" min="50" max="220" style="width:68px"></label>
+<span id="status" class="status">Ready</span></div>
+</header>
+<main><div class="grid">
+<section class="panel"><h2>🥁 Beat Maker — 16 Steps</h2><div id="seq"></div>
+<div class="row"><select id="kit"><option>Trap</option><option>Afro Beat</option><option>Kompa</option><option>Reggae</option><option>Boom Bap</option></select><button onclick="randomBeat()">🎲 Random</button><button onclick="clearBeat()">Clear</button></div></section>
+<section class="panel"><h2>🎹 Piano Roll — Real Synth</h2><div class="row"><select id="instrument"><option>Synth</option><option>Piano</option><option>Bass</option><option>Pluck</option></select><button onclick="melody()">✨ Melody</button><button onclick="bass()">🔊 Bass</button><button onclick="clearRoll()">Clear</button></div><div id="piano" class="piano"></div></section>
+<section class="panel wide"><h2>🎤 Vocal Studio</h2><div class="row"><button class="primary" onclick="recVoice()">● Record Vocal</button><button onclick="stopVoice()">Stop</button><button onclick="playVoice()">▶ Voice</button><a id="dlVoice" style="display:none"></a><span id="recStatus" class="status">No recording</span></div>
+<div class="fxgrid" style="margin-top:8px">
+<div class="fx"><b>EQ</b><input id="eq" type="range" min="-12" max="12" value="0"></div>
+<div class="fx"><b>Compressor</b><input id="comp" type="range" min="0" max="100" value="35"></div>
+<div class="fx"><b>Reverb</b><input id="reverb" type="range" min="0" max="100" value="20"></div>
+<div class="fx"><b>Delay</b><input id="delay" type="range" min="0" max="100" value="10"></div>
+<div class="fx"><b>Saturation</b><input id="sat" type="range" min="0" max="100" value="5"></div></div></section>
+<section class="panel wide"><h2>🎛️ Mixer Pro</h2><div id="mixer" class="mixer"></div></section>
+<section class="panel"><h2>🧩 Arrangement</h2><div class="row"><button onclick="arrange()">⚡ Auto Arrange</button><button onclick="clearArr()">Clear</button></div><div id="arr" class="row" style="margin-top:8px"></div></section>
+<section class="panel"><h2>✨ Master</h2><input id="master" type="range" min="0" max="120" value="90" style="width:100%"><div class="small">Master volume</div><p class="small">V2 sèvi ak Web Audio API pou son beat + piano an tan reyèl. Mikwo mande HTTPS/localhost.</p></section>
+</div></main>
+<script>
+const tracks=['Kick','Snare','Hi-Hat','Clap','808 Bass','Percussion','FX'];
+let beat=tracks.map(()=>Array(16).fill(false)), roll=Array.from({length:10},()=>Array(32).fill(false)),arr=Array(16).fill(false);
+let ctx=null,masterGain=null,playing=false,timer=null,step=0,voiceBlob=null,voiceRec=null,voiceChunks=[],mixDest=null,mixRec=null,mixChunks=[];
+const $=x=>document.getElementById(x);
+function audio(){if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)();masterGain=ctx.createGain();masterGain.connect(ctx.destination);mixDest=ctx.createMediaStreamDestination();masterGain.connect(mixDest)} if(ctx.state==='suspended')ctx.resume();masterGain.gain.value=+$('master').value/100;return ctx}
+function init(){buildSeq();buildPiano();buildMixer();buildArr()}
+function buildSeq(){let s=$('seq');s.innerHTML='';tracks.forEach((n,r)=>{let d=document.createElement('div');d.className='track';let lab=document.createElement('div');lab.className='trackname';lab.textContent=n;d.append(lab);let g=document.createElement('div');g.className='steps';for(let c=0;c<16;c++){let b=document.createElement('button');b.className='step'+(beat[r][c]?' on':'');b.onclick=()=>{beat[r][c]=!beat[r][c];b.classList.toggle('on')};g.append(b)}d.append(g);s.append(d)})}
+function buildPiano(){let p=$('piano');p.innerHTML='';['C6','B5','A5','G5','F5','E5','D5','C5','B4','A4'].forEach((n,r)=>{let row=document.createElement('div');row.className='prow';let lab=document.createElement('div');lab.className='small';lab.textContent=n;row.append(lab);let cells=document.createElement('div');cells.className='cells';for(let c=0;c<32;c++){let b=document.createElement('button');b.className='cell'+(roll[r][c]?' on':'');b.onclick=()=>{roll[r][c]=!roll[r][c];b.classList.toggle('on')};cells.append(b)}row.append(cells);p.append(row)})}
+function buildMixer(){let m=$('mixer');m.innerHTML='';['Voice','Kick','Snare','Hi-Hat','Bass','Melody','FX'].forEach((n,i)=>{let d=document.createElement('div');d.className='ch';d.innerHTML='<b>'+n+'</b><div class="meter"><div id="bar'+i+'" class="bar"></div></div>';let f=document.createElement('input');f.type='range';f.min=0;f.max=100;f.value=i?75:85;f.className='fader';d.append(f);let mu=document.createElement('button');mu.textContent='M';mu.onclick=()=>mu.classList.toggle('on');d.append(mu);m.append(d)})}
+function buildArr(){let a=$('arr');a.innerHTML='';arr.forEach((v,i)=>{let b=document.createElement('button');b.textContent=i+1;b.className=v?'on':'';b.onclick=()=>{arr[i]=!arr[i];b.classList.toggle('on')};a.append(b)})}
+function clearBeat(){beat=tracks.map(()=>Array(16).fill(false));buildSeq()}function randomBeat(){beat=beat.map((r,i)=>r.map((_,c)=>Math.random()<(i==2?.55:.18)));buildSeq()}
+function clearRoll(){roll=roll.map(r=>r.map(()=>false));buildPiano()}
+function melody(){clearRoll();[[0,0],[2,2],[4,4],[2,6],[5,8],[4,10],[2,12],[0,14],[2,16],[4,18],[5,20],[4,22],[2,24],[0,26],[4,28],[2,30]].forEach(([r,c])=>roll[r][c]=true);buildPiano()}
+function bass(){clearRoll();[7,7,8,7,9,8,7,7].forEach((r,i)=>roll[r][i*4]=true);buildPiano()}
+function arrange(){arr=arr.map((_,i)=>i%2===0);buildArr()}function clearArr(){arr=arr.map(()=>false);buildArr()}
+function env(type){let g=ctx.createGain();g.connect(masterGain);return g}
+function osc(freq,dur,type='sine',gain=.08){let o=ctx.createOscillator(),g=env();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(gain,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+dur);o.connect(g);o.start();o.stop(ctx.currentTime+dur)}
+function drum(kind){let o=ctx.createOscillator(),g=env(),t=ctx.currentTime;o.connect(g);if(kind==='kick'){o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(48,t+.12);g.gain.setValueAtTime(.42,t);g.gain.exponentialRampToValueAtTime(.001,t+.28);o.start();o.stop(t+.3)}else{let b=ctx.createBuffer(1,ctx.sampleRate*.12,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;let n=ctx.createBufferSource(),f=ctx.createBiquadFilter();n.buffer=b;f.type=kind==='snare'?'bandpass':'highpass';f.frequency.value=kind==='snare'?1800:5000;n.connect(f);f.connect(g);g.gain.setValueAtTime(kind==='snare'?.18:.08,t);g.gain.exponentialRampToValueAtTime(.001,t+.12);n.start();n.stop(t+.13)}}
+function playStep(){let t=ctx.currentTime;beat.forEach((r,i)=>{if(r[step]){if(i===0)drum('kick');else if(i===1)drum('snare');else if(i===2)drum('hat');else if(i===3)drum('snare');else if(i===4)osc(55,.18,'sine',.18);else drum('hat')}});let notes=[523.25,493.88,440,392,349.23,329.63,293.66,261.63,246.94,220];roll.forEach((r,i)=>{if(r[step*2%32])osc(notes[i],.18,$('instrument').value==='Bass'?'sawtooth':'triangle',.06)});document.querySelectorAll('.step').forEach((b,i)=>b.classList.toggle('playhead',i%16===step));step=(step+1)%16}
+function start(){audio();if(playing)return;playing=true;step=0;let ms=60000/(+$('bpm').value||100)/4;playStep();timer=setInterval(playStep,ms);$('status').textContent='Playing 🎵'}
+function stop(){playing=false;clearInterval(timer);document.querySelectorAll('.playhead').forEach(x=>x.classList.remove('playhead'));$('status').textContent='Stopped'}
+async function recVoice(){try{let s=await navigator.mediaDevices.getUserMedia({audio:true});voiceChunks=[];voiceRec=new MediaRecorder(s);voiceRec.ondataavailable=e=>voiceChunks.push(e.data);voiceRec.onstop=()=>{voiceBlob=new Blob(voiceChunks,{type:'audio/webm'});let a=$('dlVoice');a.href=URL.createObjectURL(voiceBlob);a.download='zelumrai-vocal.webm';a.textContent='⬇️ Vocal';a.style.display='inline-block';$('recStatus').textContent='Vocal ready ✅';s.getTracks().forEach(x=>x.stop())};voiceRec.start();$('recStatus').textContent='🔴 Recording'}catch(e){$('recStatus').textContent='Mic requires HTTPS + permission'}}
+function stopVoice(){if(voiceRec&&voiceRec.state!=='inactive')voiceRec.stop()}function playVoice(){if(voiceBlob)new Audio(URL.createObjectURL(voiceBlob)).play()}
+function recordMix(){audio();mixChunks=[];mixRec=new MediaRecorder(mixDest.stream);mixRec.ondataavailable=e=>mixChunks.push(e.data);mixRec.onstop=()=>{let b=new Blob(mixChunks,{type:'audio/webm'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=($('project').value||'zelumrai')+'-mix.webm';a.click();$('status').textContent='Mix recorded ✅'};mixRec.start();start();$('status').textContent='Recording mix 🔴'}
+function stopMix(){if(mixRec&&mixRec.state!=='inactive')mixRec.stop();stop()}
+function save(){localStorage.setItem('zr-full-v2',JSON.stringify({project:$('project').value,beat,roll,arr,bpm:$('bpm').value,kit:$('kit').value,instrument:$('instrument').value,fx:['eq','comp','reverb','delay','sat'].map(x=>$(x)?.value),master:$('master').value}));$('status').textContent='Saved locally ✅'}
+function load(){let x=localStorage.getItem('zr-full-v2');if(!x)return;let s=JSON.parse(x);beat=s.beat;roll=s.roll;arr=s.arr;$('project').value=s.project;$('bpm').value=s.bpm;$('kit').value=s.kit;$('instrument').value=s.instrument;$('master').value=s.master;init();$('status').textContent='Loaded ✅'}
+function newProject(){beat=tracks.map(()=>Array(16).fill(false));roll=Array.from({length:10},()=>Array(32).fill(false));arr=Array(16).fill(false);$('project').value='New Zélum’Rai Project';init()}
+function exportBeatWav(){let sr=44100,bpm=+$('bpm').value||100,steps=16,spb=60/bpm/4,dur=steps*spb+.4,n=Math.ceil(sr*dur),buf=new ArrayBuffer(44+n*2),v=new DataView(buf);function ws(o,s){for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))}ws(0,'RIFF');v.setUint32(4,36+n*2,true);ws(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);ws(36,'data');v.setUint32(40,n*2,true);for(let i=0;i<n;i++){let t=i/sr,s=0;for(let st=0;st<16;st++){let dt=t-st*spb;if(dt>=0&&dt<.22&&beat[0][st])s+=Math.sin(2*Math.PI*(110-60*Math.min(dt/.12,1))*dt)*Math.exp(-dt*25)*.6;if(dt>=0&&dt<.1&&beat[2][st])s+=(Math.random()*2-1)*Math.exp(-dt*55)*.08}v.setInt16(44+i*2,Math.max(-1,Math.min(1,s))*32767,true)}let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));a.download=($('project').value||'zelumrai')+'-beat.wav';a.click();$('status').textContent='Real beat WAV exported ✅'}
+$('master').oninput=()=>{if(masterGain)masterGain.gain.value=+$('master').value/100};init();
+</script></body></html>
